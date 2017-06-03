@@ -1,0 +1,46 @@
+function create() {
+    var series = new Array();//需要返回的横向数据轴
+
+    var Isname = [];//用来存放不同的因素变量（例如：A房子，B房子）
+
+    // if (JsonStr.total < 12) {//某个月份销售量为空
+    for (var i = 0; i < JsonStr.total; i++) {//jsonStr返回来的数据
+        var cn = JsonStr.rows[i].TypeName;
+        if ($.inArray(cn, Isname) < 0)
+        { Isname.push(cn); }
+    }//去掉重复项后的因素变量
+    console.log(Isname);
+    //
+    var newdata = new Array();//用来存放横向数据轴中的数据数组
+
+    //
+    var tempdata = new Array(12);//每组12条数据
+    for (var k = 0; k < 12; k++) {//数组初始化为0//    12个月固定不变
+        tempdata[k]=0;
+    }
+    for (var p = 0; p < Isname.length; p++) {
+        var nametemp = Isname[p];
+        newdata.push({ "temp": tempdata });//横向数据轴所需的数据数组个数
+
+    }
+    for (var n = 0; n < Isname.length; n++) {//遍历Isname
+        newdata[n].temp = ResetArray();//遍历一条Name后，重置接下来的数组全部为零，因为接下来的数据已被更改。（这就是js的笑点。。个人看法）
+        for (var m = 0; m < JsonStr.total; m++) {//遍历JsonStr
+            var cn2 = JsonStr.rows[m].TypeName;
+            if (Isname[n] === cn2)//相等则记录月份和数量后PUSH
+            {
+                var month = JsonStr.rows[m].Month;
+                var s1 = newdata[n].temp;//下面三条很重要：js必须先取出到某个数组或对象里，然后操作取出来的数组或对象，最后再将取出来的数组或对象
+                                            //更新会原来的数组或对象里，才能得以保存。
+                                             //直接进行操作，将丢失或覆盖修改。
+                s1[month - 1] = JsonStr.rows[m].SumNum;
+                newdata[n].temp = s1;
+
+            }
+        }//遍历完第一个Isname，PUSH
+        series.push({ "name": Isname[n], "data": newdata[n].temp });//最后PUsh 即为所得
+
+    }
+    return series;
+
+}
